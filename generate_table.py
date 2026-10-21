@@ -1,22 +1,27 @@
 import numpy as np
 import pandas as pd
 
-# Standard D/L exponential model parameters for resources
-# Wickets 0 through 9
-R0 = [100.0, 93.4, 85.1, 74.9, 62.7, 49.0, 34.9, 22.0, 11.9, 4.7]
-L  = [0.0090, 0.0092, 0.0096, 0.0102, 0.0112, 0.0128, 0.0152, 0.0190, 0.0260, 0.0450]
+# 120-balls max resource targets for 0 to 9 wickets lost at the start of the innings (b = 120)
+targets_at_120 = [100.0, 93.4, 85.1, 74.9, 62.7, 49.0, 34.9, 22.0, 11.9, 4.7]
+# Decay constants tuned for 120 balls T20 format
+L = [0.015, 0.016, 0.017, 0.018, 0.020, 0.022, 0.025, 0.030, 0.040, 0.060]
 
+balls = np.arange(1, 121)
 data = {}
 
 for w in range(10):
-    # Calculate resource percentage remaining for each ball (1 to 120)
+    # Normalize so that at b = 120, the value equals exactly targets_at_120[w]
+    denom = 1 - np.exp(-L[w] * 120)
     data[f'w{w}'] = [
-        round(R0[w] * (1 - np.exp(-L[w] * b)), 2)
-        for b in range(1, 121)
+        round(targets_at_120[w] * (1 - np.exp(-L[w] * b)) / denom, 2)
+        for b in balls
     ]
 
 df = pd.DataFrame(data)
-df.insert(0, 'balls_remaining', range(1, 121))
+df.insert(0, 'balls_remaining', balls)
 
 # Save to CSV
-df.to_csv('dls_resource_table_120x10.csv', index=False)
+output_filename = 'dls_resource_table_120x10.csv'
+df.to_csv(output_filename, index=False)
+print(f"Successfully generated and saved: {output_filename}")
+print(f"Check at 120 balls remaining, w0: {df.loc[df['balls_remaining'] == 120, 'w0'].values[0]}%")
