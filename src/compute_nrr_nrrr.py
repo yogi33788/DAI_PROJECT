@@ -213,7 +213,7 @@ for _, row in df.iterrows():
         nrrr_stats[key2]["sum"] += nrrr2
         nrrr_stats[key2]["count"] += 1
 
-    # --------------------------------------------------
+       # --------------------------------------------------
     # 8.5. Update cumulative wins and matches
     # --------------------------------------------------
 
@@ -221,12 +221,19 @@ for _, row in df.iterrows():
     wins_stats[key1]["matches"] += 1
     wins_stats[key2]["matches"] += 1
 
-    # Increment wins only for the winner
+    # Award wins based on the match result
     if pd.notna(winner) and winner == team1:
         wins_stats[key1]["wins"] += 1
 
     elif pd.notna(winner) and winner == team2:
         wins_stats[key2]["wins"] += 1
+
+    # Draw / tie: award 0.5 win to each team
+    elif pd.isna(winner) or str(winner).strip().lower() in {
+        "draw", "tie", "no result", "no-result"
+    }:
+        wins_stats[key1]["wins"] += 0.5
+        wins_stats[key2]["wins"] += 0.5
 
     # Cumulative values AFTER current match
     team1_totalwins = wins_stats[key1]["wins"]
@@ -234,7 +241,6 @@ for _, row in df.iterrows():
 
     team2_totalwins = wins_stats[key2]["wins"]
     team2_totalmatches = wins_stats[key2]["matches"]
-
     # --------------------------------------------------
     # 9. Calculate cumulative values AFTER current match
     # --------------------------------------------------
