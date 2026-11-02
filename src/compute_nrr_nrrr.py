@@ -80,6 +80,9 @@ nrr_stats = {}
 
 nrrr_stats = {}
 
+# Cumulative wins and matches
+wins_stats = {}
+
 
 # --------------------------------------------------
 # 4. Process matches chronologically
@@ -162,6 +165,13 @@ for _, row in df.iterrows():
                 "count": 0,
             }
 
+        # Initialize cumulative wins and matches
+        if key not in wins_stats:
+            wins_stats[key] = {
+                "wins": 0,
+                "matches": 0,
+            }
+
     # --------------------------------------------------
     # 7. Update cumulative NRR for this season
     # --------------------------------------------------
@@ -202,6 +212,28 @@ for _, row in df.iterrows():
     if pd.notna(nrrr2):
         nrrr_stats[key2]["sum"] += nrrr2
         nrrr_stats[key2]["count"] += 1
+
+    # --------------------------------------------------
+    # 8.5. Update cumulative wins and matches
+    # --------------------------------------------------
+
+    # Both teams have played one more match
+    wins_stats[key1]["matches"] += 1
+    wins_stats[key2]["matches"] += 1
+
+    # Increment wins only for the winner
+    if pd.notna(winner) and winner == team1:
+        wins_stats[key1]["wins"] += 1
+
+    elif pd.notna(winner) and winner == team2:
+        wins_stats[key2]["wins"] += 1
+
+    # Cumulative values AFTER current match
+    team1_totalwins = wins_stats[key1]["wins"]
+    team1_totalmatches = wins_stats[key1]["matches"]
+
+    team2_totalwins = wins_stats[key2]["wins"]
+    team2_totalmatches = wins_stats[key2]["matches"]
 
     # --------------------------------------------------
     # 9. Calculate cumulative values AFTER current match
@@ -257,6 +289,13 @@ for _, row in df.iterrows():
         "Team2": team2,
         "Winner": winner,
 
+        # Cumulative wins and matches
+        "team1_totalwins": team1_totalwins,
+        "team1_totalmatches": team1_totalmatches,
+
+        "team2_totalwins": team2_totalwins,
+        "team2_totalmatches": team2_totalmatches,
+
         "runs1": runs1,
         "legalballs1": legalballs1,
 
@@ -289,18 +328,29 @@ columns = [
     "Team1",
     "Team2",
     "Winner",
+
+    "team1_totalwins",
+    "team1_totalmatches",
+    "team2_totalwins",
+    "team2_totalmatches",
+
     "runs1",
     "legalballs1",
     "runs2",
     "legalballs2",
+
     "nrrr1",
     "nrrr2",
+
     "nrr1",
     "nrr2",
+
     "netnrrr1",
     "netnrrr2",
+
     "netnrr1",
     "netnrr2",
+
     "All flags",
 ]
 
